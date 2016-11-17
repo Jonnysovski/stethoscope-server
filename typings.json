@@ -1,0 +1,21 @@
+{
+  "name": "stethoscope-server",
+  "dependencies": {
+    "body-parser": "registry:npm/body-parser#1.15.2+20161116154925",
+    "express": "registry:npm/express#4.14.0+20160925001530",
+    "mongodb": "registry:npm/mongodb#2.1.0+20161108182714"
+  },
+  "globalDependencies": {
+    "bluebird": "registry:dt/bluebird#3.0.0+20161007114152",
+    "es6-shim": "registry:dt/es6-shim#0.31.2+20160602141504",
+    "express-serve-static-core": "registry:dt/express-serve-static-core#4.0.0+20161012061536",
+    "method-override": "registry:dt/method-override#0.0.0+20160925094606",
+    "mime": "registry:dt/mime#0.0.0+20160316155526",
+    "mongoose": "registry:dt/mongoose#4.5.9+20161010180758",
+    "mongoose-promise": "registry:dt/mongoose-promise#4.5.4+20160822161941",
+    "morgan": "registry:dt/morgan#1.7.0+20160524142355",
+    "node": "registry:dt/node#6.0.0+20161110151007",
+    "promise": "registry:dt/promise#7.1.1+20160602154553",
+    "serve-static": "registry:dt/serve-static#0.0.0+20160606155157"
+  }
+}
