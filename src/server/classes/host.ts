@@ -1,6 +1,6 @@
 export class Host {
-    hostid: number;
+    id: number;
     host: string;
     name: string;
-    description: string;
+    available: number;
 }

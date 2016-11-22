@@ -5,6 +5,8 @@ import * as morgan from 'morgan';
 import * as methodOverride from 'method-override';
 import * as mongoose from 'mongoose';
 import * as bluebird from 'bluebird';
+import { TriggerScheduler } from './scheduler/trigger';
+import { Scheduler } from './scheduler/scheduler';
 // import * as requestRouter from './controllers/request.controller';
 // import * as userRouter from './controllers/user.controller';
 var config = require('./../../config');
@@ -32,4 +34,5 @@ const port: number = 80;
 // app.use('/api/', userRouter);
 var server = app.listen(port, () => {
     console.log('Application is running port %s', port);
+    Scheduler.updateTriggers();
 });
