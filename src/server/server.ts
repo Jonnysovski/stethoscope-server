@@ -7,8 +7,9 @@ import * as mongoose from 'mongoose';
 import * as bluebird from 'bluebird';
 import { TriggerScheduler } from './scheduler/trigger';
 import { Scheduler } from './scheduler/scheduler';
-// import * as requestRouter from './controllers/request.controller';
-// import * as userRouter from './controllers/user.controller';
+import * as triggerRouter from './controllers/trigger.controller';
+
+
 var config = require('./../../config');
 const app: express.Application = express();
 bluebird.promisifyAll(mongoose);
@@ -29,9 +30,9 @@ app.use(function (req, res, next) {
     // Pass to next layer of middleware
     next();
 });
-const port: number = 80;
-// app.use('/api/', requestRouter);
-// app.use('/api/', userRouter);
+
+const port: number = 3000;
+
 var server = app.listen(port, () => {
     console.log('Application is running port %s', port);
     Scheduler.updateTriggers();

@@ -1,6 +1,9 @@
 import { Host } from './host';
+import * as mongoose from 'mongoose';
 
-export class Trigger {
+// TODO: Ask Ron about the document extend
+
+export interface ITrigger extends mongoose.Document{
     id: number;
     description: string;
     status: number;
