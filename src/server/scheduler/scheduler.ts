@@ -1,14 +1,14 @@
-/// <reference path="./../../../typings/index.d.ts" />
-
 import * as nodeSchedule from 'node-schedule';
-import * as Promise from 'bluebird';
-import { TriggerScheduler } from './trigger';
+// import { TriggerScheduler } from './trigger';
+import { TriggerManager } from '../managers/trigger.manager';
+
+var triggerManager = new TriggerManager();
 
 export class Scheduler {
     public static updateTriggers() {
         nodeSchedule.scheduleJob('*/10 * * * * *', () => {
-            TriggerScheduler.getTriggers().then(triggers => {
-                console.log(triggers);
+            triggerManager.getTriggers().then(triggers => {
+                // console.log(triggers);
             }, error => {
                 console.error(error);
             });
