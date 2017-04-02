@@ -27,20 +27,6 @@ export class HostManager {
         });
     }
 
-    public getIpAlt(): Promise<any> {
-        return new Promise((resolve, reject) => {
-            this.zabbix.request('host.get', {
-                "selectInterfaces": [ "ip" ]
-            }, (err, res) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(res);
-                }
-            });
-        });
-    }
-
     public getIp(): Promise<any> {
         return new Promise((resolve, reject) => {
             this.zabbix.request('hostinterface.get', {

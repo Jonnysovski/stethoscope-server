@@ -23,13 +23,4 @@ router.get('/ip', (req:express.Request, res:express.Response) => {
     })
 });
 
-router.get('/ipAlt', (req:express.Request, res:express.Response) => {
-    hostManager.getIpAlt().then( result => {
-        return res.json(result);
-    }).catch( err => {
-        console.log(err);
-        return res.sendStatus(500);
-    })
-});
-
 export = router;
