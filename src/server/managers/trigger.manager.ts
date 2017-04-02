@@ -2,10 +2,16 @@ import * as Zabbix from 'zabbix-api';
 import config from '../config';
 import { ITrigger } from '../classes/trigger';
 import { Item } from '../classes/item';
+import { Fault } from '../classes/fault';
+import { ItemManager } from './../managers/item.manager';
+import { HostManager } from './../managers/host.manager';
+
 
 export class TriggerManager {
     private zabbix;
-    
+    private _itemManager = new ItemManager();
+    private _hostManager = new HostManager();
+
     constructor(){
         this.zabbix = new Zabbix(
             config.ZABBIX.API.AUTH.ZABBIX_USERNAME,
@@ -20,7 +26,7 @@ export class TriggerManager {
                 "output": ["description", "status", "priority", "lastchange", "comments"],
                 "selectGroups": ["name", "internal"],
                 "selectTags": "extend",
-                "selectHosts": ["host", "available", "name"],
+                "selectHosts": ["host", "available", "name", "ip"],
                 "withLastEventUnacknowledged": 1,
                 "expandDescription": "1",
                 "filter": {
@@ -36,6 +42,47 @@ export class TriggerManager {
                 }
             });
         });
+    }
+
+    private filterByField( filterVal: string, getObjField: Function,  faults: Fault[]): Fault[] {
+        // if(!filteredValue || filteredValue == '') return faults;
+        if(!filterVal || filterVal == 'undefined'){
+            return faults;
+        } 
+        let filtered: Fault[] = [];
+        for (let fault of faults) {
+            if( isSubstringWeak(getObjField(fault),filterVal) ) {
+                filtered.push(fault);
+            }
+        }
+        return filtered;
+    }
+
+    public getFaults(): Promise<Fault[]> {
+        return new Promise((resolve, reject) => {
+            Promise.all([
+                this.getTriggers(), 
+                this._itemManager.getCurrentUsers(),
+                this._itemManager.getUserLastLogin(),
+                this._hostManager.getIp()
+            ]).then(vals => {
+                let faults: Fault[] = this.completeFaultData(vals[0], vals[1], vals[2], vals[3]);
+                resolve(faults);
+            }).catch( reason => {
+                reject(reason);
+            });
+        })
+    }
+
+    public getFilteredFaults( filter ) {
+        return new Promise((resolve, reject) => {
+            this.getFaults().then( (faults) => {
+                let filteredFaults = [];
+                resolve(this.filterByField(filter.hostName, (fault)=>{return fault.host.name}, 
+                            this.filterByField(filter.ip, (fault)=>{return fault.ip}, 
+                                this.filterByField( filter.userName, (fault) => { return fault.currentUser}, faults) )));
+            }).catch( reason => reject(reason));
+        })
     }
 
     public getSevereNum(): Promise<number> {
@@ -58,16 +105,18 @@ export class TriggerManager {
         });
     }
 
-    public joinTriggerUser(triggers, users, lastLogins) {
-      for(let trigger of triggers) {
-            let hostId = trigger.hosts[0].hostid;
-            trigger.currentUser = getValueByHostHelper(hostId, users);
-            let lastLogin =  getValueByHostHelper(hostId, lastLogins);
-            if(lastLogin == "0"){
-                // lastLogin = new Date(0);
-                lastLogin = "---";
-            } 
-            trigger.lastLogin = lastLogin;
+    public completeFaultData(triggers, users, lastLogins, ips): Fault[] {
+        let faults: Fault[] = [];
+
+        for(let trigger of triggers) {
+            let host = {
+                id: trigger.hosts[0].hostid,
+                name: trigger.hosts[0].host
+            }
+            let currentUser = getValueByHostHelper(host.id, users);
+            let lastLogin =  getValueByHostHelper(host.id, lastLogins);
+            let ip =  getIpByHostHelper(host.id, ips);
+            if(lastLogin == "0") lastLogin = "---";
             let type = "---";
             for (let tag of trigger.tags) {
                 if (tag.tag == "Type"){
@@ -75,10 +124,23 @@ export class TriggerManager {
                     break;
                 }
             }
-            trigger.type = type;
+
+            let fault = new Fault(
+                trigger.triggerid,
+                trigger.description,
+                trigger.status,
+                trigger.priority,
+                trigger.lastchange,
+                host,
+                currentUser,
+                lastLogin,
+                type,
+                ip
+            );
+            faults.push(fault);
         }
-        return triggers;
-    }
+        return faults;
+        }
     
 }
 
@@ -91,6 +153,19 @@ function getValueByHostHelper(hostId, matrix) {
     return "---";
 }
 
+function getIpByHostHelper(hostId, matrix) {
+    for(let item of matrix) {
+        if(item.hostid == hostId) {
+            return item.ip;
+        }
+    }
+    return "---";
+}
+
 function normalizeData(data) {
     return  JSON.parse(JSON.stringify(data));
+}
+
+function isSubstringWeak(str: string, sub: string) {
+    return str.toLowerCase().includes(sub.toLowerCase());
 }
