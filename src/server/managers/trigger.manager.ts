@@ -64,9 +64,10 @@ export class TriggerManager {
                 this.getTriggers(), 
                 this._itemManager.getCurrentUsers(),
                 this._itemManager.getUserLastLogin(),
-                this._hostManager.getIp()
+                this._hostManager.getIp(),
+                this._itemManager.getMacDirty()
             ]).then(vals => {
-                let faults: Fault[] = this.completeFaultData(vals[0], vals[1], vals[2], vals[3]);
+                let faults: Fault[] = this.completeFaultData(vals[0], vals[1], vals[2], vals[3], vals[4]);
                 resolve(faults);
             }).catch( reason => {
                 reject(reason);
@@ -78,9 +79,14 @@ export class TriggerManager {
         return new Promise((resolve, reject) => {
             this.getFaults().then( (faults) => {
                 let filteredFaults = [];
-                resolve(this.filterByField(filter.hostName, (fault)=>{return fault.host.name}, 
-                            this.filterByField(filter.ip, (fault)=>{return fault.ip}, 
-                                this.filterByField( filter.userName, (fault) => { return fault.currentUser}, faults) )));
+                resolve(this.filterByField(filter.hostName, (fault) => {return fault.host.name}, 
+                            this.filterByField(filter.ip, (fault) => {return fault.ip}, 
+                                this.filterByField(filter.mac, (fault) => {return fault.mac}, 
+                                    this.filterByField( filter.userName, (fault) => { return fault.currentUser}, faults) 
+                                    )
+                                )
+                            )
+                        );
             }).catch( reason => reject(reason));
         })
     }
@@ -105,7 +111,7 @@ export class TriggerManager {
         });
     }
 
-    public completeFaultData(triggers, users, lastLogins, ips): Fault[] {
+    public completeFaultData(triggers, users, lastLogins, ips, macs): Fault[] {
         let faults: Fault[] = [];
 
         for(let trigger of triggers) {
@@ -116,6 +122,7 @@ export class TriggerManager {
             let currentUser = getValueByHostHelper(host.id, users);
             let lastLogin =  getValueByHostHelper(host.id, lastLogins);
             let ip =  getIpByHostHelper(host.id, ips);
+            let mac = macStringParser(getValueByHostHelper(host.id, macs));
             if(lastLogin == "0") lastLogin = "---";
             let type = "---";
             for (let tag of trigger.tags) {
@@ -135,7 +142,8 @@ export class TriggerManager {
                 currentUser,
                 lastLogin,
                 type,
-                ip
+                ip,
+                mac
             );
             faults.push(fault);
         }
@@ -168,4 +176,15 @@ function normalizeData(data) {
 
 function isSubstringWeak(str: string, sub: string) {
     return str.toLowerCase().includes(sub.toLowerCase());
+}
+
+// Helps parse the string, and return the MAC adress out of it.
+// -    if didnt found mac returns: '---'.
+function macStringParser(str) {
+    let parsed = str.split(" ");
+    let index = parsed.indexOf("MAC");
+    if( index == -1 ) {
+        return "---";
+    }
+    return parsed[index + 2];
 }

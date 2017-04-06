@@ -33,7 +33,7 @@ router.get('/test', (req:express.Request, res:express.Response) => {
         itemManager.getUserLastLogin()
     ]).then(vals => {
         console.log("There are " + vals.length);
-        let triggers = triggerManager.completeFaultData(vals[0], vals[1], vals[2], vals[3]);
+        let triggers = triggerManager.completeFaultData(vals[0], vals[1], vals[2], vals[3], vals[4]);
         return res.json(triggers);
     }).catch( reason => {
         console.log(reason);
@@ -52,7 +52,7 @@ router.get('/faults', (req:express.Request, res:express.Response) => {
 
 router.get('/faults/filter/:filter', (req:express.Request, res:express.Response) => {
     let filter = JSON.parse(req.params.filter);
-    triggerManager.getFilteredFaults({hostName: filter.hostName, userName: filter.userName, ip: filter.ip}).then( faults => {
+    triggerManager.getFilteredFaults({hostName: filter.hostName, userName: filter.userName, ip: filter.ip, mac: filter.mac}).then( faults => {
         return res.json(faults);
     }).catch( err => {
         console.log(err);

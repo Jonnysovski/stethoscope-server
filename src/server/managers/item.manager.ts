@@ -55,6 +55,24 @@ export class ItemManager {
         });
     }
 
+    public getMacDirty(): Promise<any> {
+            
+        return new Promise((resolve, reject) => {
+            this.zabbix.request('item.get', {
+                "output": ['lastvalue', 'hostid'],
+                "filter": {
+                    "name": "Get IP Addresses"
+                }
+            }, (err, res) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(res);
+                }
+            });
+        });
+    }
+
     public getCurrentUsers(): Promise<any> {
             
         return new Promise((resolve, reject) => {

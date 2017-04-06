@@ -14,6 +14,7 @@ export class Fault{
     lastConnection: string;
     type:string;
     ip :string;
+    mac: string;
 
     constructor(
         id: number,
@@ -25,7 +26,8 @@ export class Fault{
         currentUser: string,
         lastConnection: string,
         type:string,
-        ip :string
+        ip :string,
+        mac: string
     ) {
         this.id = id;
         this.description = description;
@@ -37,5 +39,6 @@ export class Fault{
         this.lastConnection = lastConnection;
         this.type = type;
         this.ip = ip;
+        this.mac = mac;
     }
 }
